@@ -2,29 +2,36 @@ extern crate colored;
 
 use colored::*;
 const NB_CELLS: usize = 40;
+const NB_START_HORSES: usize = 2;
+const NB_PLAYERS: usize = 4;
 
 pub struct Game {
     board: [Cell; NB_CELLS],
+    stables: [usize; NB_PLAYERS],
 }
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 #[repr(u8)]
 enum Cell {
-    EMPTY,
     RED,
     YELLOW,
     GREEN,
     BLUE,
+    EMPTY,
 }
 
 impl Game {
     pub fn create() -> Game {
         let game_board: [Cell; NB_CELLS] = [Cell::EMPTY; NB_CELLS];
-        Game { board: game_board }
+        let game_stables: [usize; NB_PLAYERS] = [NB_START_HORSES; NB_PLAYERS];
+        Game {
+            board: game_board,
+            stables: game_stables,
+        }
     }
 
     fn place_horse(&mut self, horse_color: Cell) {
-        let index = 10 * (horse_color as usize - 1);
+        let index = 10 * horse_color as usize;
         self.board[index] = horse_color;
     }
 
@@ -33,8 +40,13 @@ impl Game {
         if horse_color == Cell::EMPTY {
             return;
         }
+        let new_index = (index + to_advance) % NB_CELLS;
+        if self.board[new_index] != Cell::EMPTY {
+            let old_horse_color = self.board[new_index] as usize;
+            self.stables[old_horse_color] += 1;
+        }
         self.board[index] = Cell::EMPTY;
-        self.board[(index + to_advance) % NB_CELLS] = horse_color;
+        self.board[new_index] = horse_color;
     }
 
     pub fn print_board(self) {
@@ -62,10 +74,10 @@ fn is_start_square(square_number: usize) -> bool {
     square_number % 10 == 0
 }
 
+//////////////////////////// UNIT TESTING ////////////////////////////////////
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::game::Color;
 
     #[test]
     fn can_create_game() {
@@ -75,9 +87,17 @@ mod tests {
 
     #[test]
     fn board_is_initialized() {
-        let new_game = Game::create();
-        for i in 0..NB_CELLS {
-            assert_eq!(new_game.board[i], Cell::EMPTY);
+        let game = Game::create();
+        for &cell in game.board.iter() {
+            assert_eq!(cell, Cell::EMPTY);
+        }
+    }
+
+    #[test]
+    fn stables_are_initialized() {
+        let game = Game::create();
+        for &stable in game.stables.iter() {
+            assert_eq!(stable, NB_START_HORSES);
         }
     }
 
@@ -135,5 +155,12 @@ mod tests {
         game.place_horse(Cell::YELLOW);
         game.move_horse(9, 1);
         assert_eq!(game.board[10], Cell::YELLOW);
+    }
+
+    #[test]
+    fn move_horse_kick_horse() {
+        let mut game = Game::create();
+        game.place_horse(Cell::RED);
+        game.place_horse(Cell::YELLOW);
     }
 }
