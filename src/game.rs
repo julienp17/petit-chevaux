@@ -10,11 +10,11 @@ pub struct Game {
 #[derive(Debug, Copy, Clone, PartialEq)]
 #[repr(u8)]
 enum Cell {
-    EMPTY = 0,
-    RED = 1,
-    YELLOW = 2,
-    GREEN = 3,
-    BLUE = 4,
+    EMPTY,
+    RED,
+    YELLOW,
+    GREEN,
+    BLUE,
 }
 
 impl Game {
@@ -24,14 +24,17 @@ impl Game {
     }
 
     fn place_horse(&mut self, horse_color: Cell) {
-        let index = 0;
+        let index = 10 * (horse_color as usize - 1);
         self.board[index] = horse_color;
     }
 
     fn move_horse(&mut self, index: usize, to_advance: usize) {
-        let horse_number = self.board[index];
+        let horse_color = self.board[index];
+        if horse_color == Cell::EMPTY {
+            return;
+        }
         self.board[index] = Cell::EMPTY;
-        self.board[(index + to_advance) % NB_CELLS] = horse_number;
+        self.board[(index + to_advance) % NB_CELLS] = horse_color;
     }
 
     pub fn print_board(self) {
@@ -86,10 +89,51 @@ mod tests {
     }
 
     #[test]
+    fn can_place_yellow_horse() {
+        let mut game = Game::create();
+        game.place_horse(Cell::YELLOW);
+        assert_eq!(game.board[10], Cell::YELLOW);
+    }
+
+    #[test]
+    fn can_place_green_horse() {
+        let mut game = Game::create();
+        game.place_horse(Cell::GREEN);
+        assert_eq!(game.board[20], Cell::GREEN);
+    }
+
+    #[test]
+    fn can_place_blue_horse() {
+        let mut game = Game::create();
+        game.place_horse(Cell::BLUE);
+        assert_eq!(game.board[30], Cell::BLUE);
+    }
+
+    #[test]
     fn can_move_horse() {
         let mut game = Game::create();
         game.place_horse(Cell::RED);
         game.move_horse(0, 4);
         assert_eq!(game.board[4], Cell::RED);
+    }
+
+    #[test]
+    fn can_move_horse_after_board_loop() {
+        let mut game = Game::create();
+        game.place_horse(Cell::BLUE);
+        game.move_horse(30, 12);
+        assert_eq!(game.board[2], Cell::BLUE);
+    }
+
+    #[test]
+    fn can_move_horse_no_horse_at_index() {
+        let mut game = Game::create();
+        game.move_horse(4, 3);
+        for &cell in game.board.iter() {
+            assert_eq!(cell, Cell::EMPTY);
+        }
+        game.place_horse(Cell::YELLOW);
+        game.move_horse(9, 1);
+        assert_eq!(game.board[10], Cell::YELLOW);
     }
 }
