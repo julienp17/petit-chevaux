@@ -33,6 +33,7 @@ impl Game {
     fn place_horse(&mut self, horse_color: Cell) {
         let index = 10 * horse_color as usize;
         self.board[index] = horse_color;
+        self.stables[horse_color as usize] -= 1;
     }
 
     fn move_horse(&mut self, index: usize, to_advance: usize) {
@@ -42,8 +43,8 @@ impl Game {
         }
         let new_index = (index + to_advance) % NB_CELLS;
         if self.board[new_index] != Cell::EMPTY {
-            let old_horse_color = self.board[new_index] as usize;
-            self.stables[old_horse_color] += 1;
+            let kicked_horse_color = self.board[new_index];
+            self.stables[kicked_horse_color as usize] += 1;
         }
         self.board[index] = Cell::EMPTY;
         self.board[new_index] = horse_color;
@@ -106,6 +107,7 @@ mod tests {
         let mut game = Game::create();
         game.place_horse(Cell::RED);
         assert_eq!(game.board[0], Cell::RED);
+        assert_eq!(game.stables[Cell::RED as usize], NB_START_HORSES - 1);
     }
 
     #[test]
@@ -113,6 +115,7 @@ mod tests {
         let mut game = Game::create();
         game.place_horse(Cell::YELLOW);
         assert_eq!(game.board[10], Cell::YELLOW);
+        assert_eq!(game.stables[Cell::YELLOW as usize], NB_START_HORSES - 1);
     }
 
     #[test]
@@ -120,6 +123,7 @@ mod tests {
         let mut game = Game::create();
         game.place_horse(Cell::GREEN);
         assert_eq!(game.board[20], Cell::GREEN);
+        assert_eq!(game.stables[Cell::GREEN as usize], NB_START_HORSES - 1);
     }
 
     #[test]
@@ -127,6 +131,7 @@ mod tests {
         let mut game = Game::create();
         game.place_horse(Cell::BLUE);
         assert_eq!(game.board[30], Cell::BLUE);
+        assert_eq!(game.stables[Cell::BLUE as usize], NB_START_HORSES - 1);
     }
 
     #[test]
@@ -138,7 +143,7 @@ mod tests {
     }
 
     #[test]
-    fn can_move_horse_after_board_loop() {
+    fn can_move_horse_board_loop() {
         let mut game = Game::create();
         game.place_horse(Cell::BLUE);
         game.move_horse(30, 12);
@@ -146,12 +151,17 @@ mod tests {
     }
 
     #[test]
-    fn can_move_horse_no_horse_at_index() {
+    fn move_horse_empty_board_empty_at_index() {
         let mut game = Game::create();
         game.move_horse(4, 3);
         for &cell in game.board.iter() {
             assert_eq!(cell, Cell::EMPTY);
         }
+    }
+
+    #[test]
+    fn move_horse_empty_at_index() {
+        let mut game = Game::create();
         game.place_horse(Cell::YELLOW);
         game.move_horse(9, 1);
         assert_eq!(game.board[10], Cell::YELLOW);
@@ -162,5 +172,8 @@ mod tests {
         let mut game = Game::create();
         game.place_horse(Cell::RED);
         game.place_horse(Cell::YELLOW);
+        game.move_horse(0, 10);
+        assert_eq!(game.board[10], Cell::RED);
+        assert_eq!(game.stables[Cell::YELLOW as usize], NB_START_HORSES);
     }
 }
