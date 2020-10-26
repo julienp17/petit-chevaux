@@ -40,6 +40,10 @@ impl Game {
         self.print_board();
     }
 
+    fn cell_is_empty(&self, index: usize) -> bool {
+        self.board[index] == Cell::EMPTY
+    }
+
     fn place_horse(&mut self, horse_color: Cell) {
         let start_cell = 10 * horse_color as usize;
         self.board[start_cell] = horse_color;
@@ -47,12 +51,12 @@ impl Game {
     }
 
     fn move_horse(&mut self, index: usize, to_advance: usize) {
-        let horse_color: Cell = self.board[index];
-        if horse_color == Cell::EMPTY {
+        if self.cell_is_empty(index) {
             return;
         }
+        let horse_color: Cell = self.board[index];
         let new_index = (index + to_advance) % NB_CELLS;
-        if self.board[new_index] != Cell::EMPTY {
+        if !self.cell_is_empty(new_index) {
             let kicked_horse_color = self.board[new_index];
             self.stables[kicked_horse_color as usize] += 1;
         }
