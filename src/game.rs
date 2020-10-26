@@ -1,6 +1,5 @@
-extern crate colored;
-
 use colored::*;
+use rand::Rng;
 const NB_CELLS: usize = 40;
 const NB_START_HORSES: usize = 2;
 const NB_PLAYERS: usize = 4;
@@ -38,6 +37,10 @@ impl Game {
         self.print_board();
         self.move_horse(4, 6);
         self.print_board();
+    }
+
+    fn roll_dice(&self) -> usize {
+        rand::thread_rng().gen_range(1, 6 + 1)
     }
 
     fn cell_is_empty(&self, index: usize) -> bool {
