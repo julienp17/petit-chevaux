@@ -61,6 +61,7 @@ impl Game {
             return;
         }
         let kicked_horse_color = self.board[index];
+        self.board[index] = Cell::EMPTY;
         self.stables[kicked_horse_color as usize] += 1;
     }
 
@@ -210,5 +211,21 @@ mod tests {
         game.place_horse(Cell::YELLOW);
         game.move_horse(9, 1);
         assert_eq!(game.board[10], Cell::YELLOW);
+    }
+
+    #[test]
+    fn kick_horse() {
+        let mut game = Game::new();
+        game.place_horse(Cell::RED);
+        game.kick_horse(0);
+        assert_eq!(game.board[0], Cell::EMPTY);
+        assert_eq!(game.stables[Cell::RED as usize], NB_START_HORSES);
+    }
+
+    #[test]
+    fn kick_horse_no_horse_at_index() {
+        let mut game = Game::new();
+        game.kick_horse(0);
+        assert_eq!(game.stables[Cell::RED as usize], NB_START_HORSES);
     }
 }
