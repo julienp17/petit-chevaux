@@ -48,11 +48,11 @@ impl Game {
     }
 
     fn place_horse(&mut self, horse_color: Cell) {
-        let start_cell = 10 * horse_color as usize;
-        if !self.cell_is_empty(start_cell) {
-            self.kick_horse(start_cell)
+        let start_index = 10 * horse_color as usize;
+        if !self.cell_is_empty(start_index) {
+            self.kick_horse(start_index)
         }
-        self.board[start_cell] = horse_color;
+        self.board[start_index] = horse_color;
         self.stables[horse_color as usize] -= 1;
     }
 
