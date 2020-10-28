@@ -32,10 +32,7 @@ impl Game {
     pub fn run(&mut self) {
         self.place_horse(Cell::RED);
         self.place_horse(Cell::YELLOW);
-        self.print_board();
-        self.move_horse(0, 4);
-        self.print_board();
-        self.move_horse(4, 6);
+        self.move_horse(0, 10);
         self.print_board();
     }
 
@@ -79,16 +76,71 @@ impl Game {
     }
 
     fn print_board(&self) {
-        for cell in self.board.iter() {
-            match cell {
-                Cell::RED => print!("{}", "[H]".on_red()),
-                Cell::YELLOW => print!("{}", "[H]".on_yellow()),
-                Cell::GREEN => print!("{}", "[H]".on_green()),
-                Cell::BLUE => print!("{}", "[H]".on_blue()),
-                Cell::EMPTY => print!("[ ]"),
+        self.print_stables();
+        self.print_grid();
+    }
+
+    fn print_stables(&self) {
+        self.print_stable(Cell::RED);
+        print!("         ");
+        self.print_stable(Cell::YELLOW);
+        println!();
+        self.print_stable(Cell::GREEN);
+        print!("         ");
+        self.print_stable(Cell::BLUE);
+        println!();
+        println!();
+    }
+
+    fn print_stable(&self, color: Cell) {
+        let mut nb_horses = self.stables[color as usize];
+        for _ in 0..NB_PLAYERS {
+            if nb_horses == 0 {
+                match color {
+                    Cell::RED => print!("{}", "   ".on_red()),
+                    Cell::YELLOW => print!("{}", "   ".on_yellow()),
+                    Cell::GREEN => print!("{}", "   ".on_green()),
+                    Cell::BLUE => print!("{}", "   ".on_blue()),
+                    Cell::EMPTY => print!("[ ]"),
+                }
+            } else {
+                match color {
+                    Cell::RED => print!("{}", "[H]".on_red()),
+                    Cell::YELLOW => print!("{}", "[H]".on_yellow()),
+                    Cell::GREEN => print!("{}", "[H]".on_green()),
+                    Cell::BLUE => print!("{}", "[H]".on_blue()),
+                    Cell::EMPTY => print!("[ ]"),
+                }
+                nb_horses -= 1;
             }
         }
+    }
+
+    fn print_grid(&self) {
+        for i in 0..11 {
+            self.print_cell(self.board[i]);
+        }
         println!();
+        for i in 0..9 {
+            self.print_cell(self.board[NB_CELLS - i - 1]);
+            print!("                           ");
+            self.print_cell(self.board[11 + i]);
+            println!();
+        }
+        for i in 0..11 {
+            self.print_cell(self.board[NB_CELLS - 10 - i]);
+        }
+        println!();
+    }
+
+    fn print_cell(&self, cell: Cell) {
+        match cell {
+            Cell::RED => print!("{}", "[H]".on_red()),
+            Cell::YELLOW => print!("{}", "[H]".on_yellow()),
+            Cell::GREEN => print!("{}", "[H]".on_green()),
+            Cell::BLUE => print!("{}", "[H]".on_blue()),
+            Cell::EMPTY => print!("[ ]"),
+        }
     }
 }
 
