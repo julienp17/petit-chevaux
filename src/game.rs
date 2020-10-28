@@ -1,7 +1,7 @@
 use colored::*;
 use rand::Rng;
 use std::fmt;
-const NB_CELLS: usize = 40;
+const NB_CELLS: usize = 56;
 const NB_START_HORSES: usize = 2;
 const NB_PLAYERS: usize = 4;
 
@@ -227,9 +227,9 @@ mod tests {
     #[test]
     fn can_move_horse_board_loop() {
         let mut game = Game::new();
-        game.place_horse(Cell::BLUE);
-        game.move_horse(30, 12);
-        assert_eq!(game.board[2], Cell::BLUE);
+        game.board[NB_CELLS - 1] = Cell::RED;
+        game.move_horse(NB_CELLS - 1, 1);
+        assert_eq!(game.board[0], Cell::RED);
     }
 
     #[test]
