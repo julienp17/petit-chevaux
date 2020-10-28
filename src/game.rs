@@ -1,5 +1,6 @@
 use colored::*;
 use rand::Rng;
+use std::fmt;
 const NB_CELLS: usize = 40;
 const NB_START_HORSES: usize = 2;
 const NB_PLAYERS: usize = 4;
@@ -19,6 +20,18 @@ enum Cell {
     EMPTY,
 }
 
+impl fmt::Display for Cell {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            Cell::RED    => write!(f, "{}", "[H]".on_red()),
+            Cell::YELLOW => write!(f, "{}", "[H]".on_yellow()),
+            Cell::GREEN  => write!(f, "{}", "[H]".on_green()),
+            Cell::BLUE   => write!(f, "{}", "[H]".on_blue()),
+            Cell::EMPTY  => write!(f, "[ ]"),
+        }
+    }
+}
+
 impl Game {
     pub fn new() -> Game {
         let game_board: [Cell; NB_CELLS] = [Cell::EMPTY; NB_CELLS];
@@ -32,7 +45,6 @@ impl Game {
     pub fn run(&mut self) {
         self.place_horse(Cell::RED);
         self.place_horse(Cell::YELLOW);
-        self.move_horse(0, 10);
         self.print_board();
     }
 
@@ -118,29 +130,19 @@ impl Game {
 
     fn print_grid(&self) {
         for i in 0..11 {
-            self.print_cell(self.board[i]);
+            print!("{}", self.board[i]);
         }
         println!();
         for i in 0..9 {
-            self.print_cell(self.board[NB_CELLS - i - 1]);
+            print!("{}", self.board[NB_CELLS - i - 1]);
             print!("                           ");
-            self.print_cell(self.board[11 + i]);
+            print!("{}", self.board[11 + i]);
             println!();
         }
         for i in 0..11 {
-            self.print_cell(self.board[NB_CELLS - 10 - i]);
+            print!("{}", self.board[NB_CELLS - 10 - i]);
         }
         println!();
-    }
-
-    fn print_cell(&self, cell: Cell) {
-        match cell {
-            Cell::RED => print!("{}", "[H]".on_red()),
-            Cell::YELLOW => print!("{}", "[H]".on_yellow()),
-            Cell::GREEN => print!("{}", "[H]".on_green()),
-            Cell::BLUE => print!("{}", "[H]".on_blue()),
-            Cell::EMPTY => print!("[ ]"),
-        }
     }
 }
 
