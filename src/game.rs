@@ -3,11 +3,11 @@ use rand::Rng;
 use std::fmt;
 const NB_CELLS: usize = 56;
 const NB_START_HORSES: usize = 2;
-const NB_PLAYERS: usize = 4;
+const NB_MAX_HORSES: usize = 4;
 
 pub struct Game {
     board: [Cell; NB_CELLS],
-    stables: [usize; NB_PLAYERS],
+    stables: [usize; NB_MAX_HORSES],
 }
 
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -35,7 +35,7 @@ impl fmt::Display for Cell {
 impl Game {
     pub fn new() -> Game {
         let game_board: [Cell; NB_CELLS] = [Cell::EMPTY; NB_CELLS];
-        let game_stables: [usize; NB_PLAYERS] = [NB_START_HORSES; NB_PLAYERS];
+        let game_stables: [usize; NB_MAX_HORSES] = [NB_START_HORSES; NB_MAX_HORSES];
         Game {
             board: game_board,
             stables: game_stables,
@@ -108,7 +108,7 @@ impl Game {
 
     fn print_stable(&self, color: Cell) {
         let mut nb_horses = self.stables[color as usize];
-        for _ in 0..NB_PLAYERS {
+        for _ in 0..NB_MAX_HORSES {
             if nb_horses == 0 {
                 match color {
                     Cell::RED => print!("{}", "   ".on_red()),
