@@ -45,6 +45,8 @@ impl Game {
     pub fn run(&mut self) {
         self.place_horse(Cell::RED);
         self.place_horse(Cell::YELLOW);
+        self.place_horse(Cell::GREEN);
+        self.place_horse(Cell::BLUE);
         self.print_board();
     }
 
@@ -94,11 +96,11 @@ impl Game {
 
     fn print_stables(&self) {
         self.print_stable(Cell::RED);
-        print!("         ");
+        print!("                     ");
         self.print_stable(Cell::YELLOW);
         println!();
         self.print_stable(Cell::GREEN);
-        print!("         ");
+        print!("                     ");
         self.print_stable(Cell::BLUE);
         println!();
         println!();
@@ -129,18 +131,18 @@ impl Game {
     }
 
     fn print_grid(&self) {
-        for i in 0..11 {
+        for i in 0..15 {
             print!("{}", self.board[i]);
         }
         println!();
-        for i in 0..9 {
-            print!("{}", self.board[NB_CELLS - i - 1]);
-            print!("                           ");
-            print!("{}", self.board[11 + i]);
+        for i in 0..13 {
+            print!("{}", self.board[NB_CELLS - 1 - i]);
+            print!("                                       ");
+            print!("{}", self.board[15 + i]);
             println!();
         }
-        for i in 0..11 {
-            print!("{}", self.board[NB_CELLS - 10 - i]);
+        for i in 0..15 {
+            print!("{}", self.board[NB_CELLS - 14 - i]);
         }
         println!();
     }
