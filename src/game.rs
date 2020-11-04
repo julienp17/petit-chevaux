@@ -4,10 +4,12 @@ use std::fmt;
 const NB_CELLS: usize = 56;
 const NB_START_HORSES: usize = 2;
 const NB_MAX_PLAYERS: usize = 4;
+const NB_STAIRS: usize = 6;
 
 pub struct Game {
     board: [Cell; NB_CELLS],
     stables: [usize; NB_MAX_PLAYERS],
+    stairs: [[bool; NB_STAIRS]; NB_MAX_PLAYERS],
 }
 
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -36,9 +38,11 @@ impl Game {
     pub fn new() -> Game {
         let game_board: [Cell; NB_CELLS] = [Cell::EMPTY; NB_CELLS];
         let game_stables: [usize; NB_MAX_PLAYERS] = [NB_START_HORSES; NB_MAX_PLAYERS];
+        let game_stairs: [[bool; NB_STAIRS]; NB_MAX_PLAYERS] = [[false; NB_STAIRS]; NB_MAX_PLAYERS];
         Game {
             board: game_board,
             stables: game_stables,
+            stairs: game_stairs
         }
     }
 
@@ -172,6 +176,16 @@ mod tests {
         let game = Game::new();
         for &stable in game.stables.iter() {
             assert_eq!(stable, NB_START_HORSES);
+        }
+    }
+
+    #[test]
+    fn stairs_are_initialized() {
+        let game = Game::new();
+        for &stair in game.stairs.iter() {
+            for &stair_step in stair.iter() {
+                assert_eq!(stair_step, false);
+            }
         }
     }
 
