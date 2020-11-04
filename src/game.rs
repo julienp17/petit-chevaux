@@ -107,7 +107,6 @@ impl Game {
         print!("                     ");
         self.print_stable(Cell::BLUE);
         println!();
-        println!();
     }
 
     fn print_stable(&self, color: Cell) {
@@ -122,13 +121,7 @@ impl Game {
                     Cell::EMPTY => print!("[ ]"),
                 }
             } else {
-                match color {
-                    Cell::RED => print!("{}", "[H]".on_red()),
-                    Cell::YELLOW => print!("{}", "[H]".on_yellow()),
-                    Cell::GREEN => print!("{}", "[H]".on_green()),
-                    Cell::BLUE => print!("{}", "[H]".on_blue()),
-                    Cell::EMPTY => print!("[ ]"),
-                }
+                print!("{}", color);
                 nb_horses -= 1;
             }
         }
@@ -141,7 +134,27 @@ impl Game {
         println!();
         for i in 0..13 {
             print!("{}", self.board[NB_CELLS - 1 - i]);
-            print!("                                       ");
+            if i == 0 {
+                for i in 0..NB_STAIRS {
+                    self.print_step(Cell::RED, i);
+                }
+                print!("                  ");
+                self.print_step(Cell::YELLOW, 0);
+            } else if i < 6 {
+                print!("                                    ");
+                self.print_step(Cell::YELLOW, i);
+            } else if i == 6 {
+                print!("                                       ");
+            } else if i > 6 && i < 12 {
+                self.print_step(Cell::BLUE, 12 - i);
+                print!("                                    ");
+            } else {
+                self.print_step(Cell::BLUE, 0);
+                print!("                  ");
+                for i in 0..NB_STAIRS {
+                    self.print_step(Cell::GREEN, NB_STAIRS - i - 1);
+                }
+            }
             print!("{}", self.board[15 + i]);
             println!();
         }
@@ -149,6 +162,25 @@ impl Game {
             print!("{}", self.board[NB_CELLS - 14 - i]);
         }
         println!();
+    }
+
+    fn print_step(&self, color: Cell, index: usize) {
+        let step_is_filled = self.stairs[color as usize][index];
+        if step_is_filled {
+            print!("{}", color);
+        } else {
+            let mut step = String::new();
+            step.push('[');
+            step.push_str(&(index + 1).to_string());
+            step.push(']');
+            match color {
+                Cell::RED => print!("{}", step.on_red()),
+                Cell::YELLOW => print!("{}", step.on_yellow()),
+                Cell::GREEN => print!("{}", step.on_green()),
+                Cell::BLUE => print!("{}", step.on_blue()),
+                Cell::EMPTY => print!("[ ]")
+            }
+        }
     }
 }
 
