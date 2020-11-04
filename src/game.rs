@@ -272,27 +272,19 @@ mod tests {
     }
 
     #[test]
-    fn can_move_horse() {
-        let mut game = Game::new();
-        game.place_horse(Cell::RED);
-        game.move_horse(0, 4);
-        assert_eq!(game.board[4], Cell::RED);
-    }
-
-    #[test]
-    fn can_move_horse_board_loop() {
-        let mut game = Game::new();
-        game.board[NB_CELLS - 1] = Cell::RED;
-        game.move_horse(NB_CELLS - 1, 1);
-        assert_eq!(game.board[0], Cell::RED);
-    }
-
-    #[test]
     fn move_horse() {
         let mut game = Game::new();
         game.place_horse(Cell::RED);
         game.move_horse(0, 3);
         assert_eq!(game.board[3], Cell::RED);
+    }
+
+    #[test]
+    fn move_horse_board_loop() {
+        let mut game = Game::new();
+        game.board[NB_CELLS - 1] = Cell::RED;
+        game.move_horse(NB_CELLS - 1, 1);
+        assert_eq!(game.board[0], Cell::RED);
     }
 
     #[test]
@@ -309,7 +301,7 @@ mod tests {
     }
 
     #[test]
-    fn move_horse_empty_board_empty_at_index() {
+    fn move_horse_empty_at_index() {
         let mut game = Game::new();
         game.move_horse(4, 3);
         for &cell in game.board.iter() {
@@ -318,7 +310,7 @@ mod tests {
     }
 
     #[test]
-    fn move_horse_empty_at_index() {
+    fn move_horse_empty_at_new_index() {
         let mut game = Game::new();
         let start_index = NB_CELLS / 4;
 
