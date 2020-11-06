@@ -25,11 +25,11 @@ enum Cell {
 impl fmt::Display for Cell {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            Cell::RED    => write!(f, "{}", "[H]".on_red()),
+            Cell::RED => write!(f, "{}", "[H]".on_red()),
             Cell::YELLOW => write!(f, "{}", "[H]".on_yellow()),
-            Cell::GREEN  => write!(f, "{}", "[H]".on_green()),
-            Cell::BLUE   => write!(f, "{}", "[H]".on_blue()),
-            Cell::EMPTY  => write!(f, "[ ]"),
+            Cell::GREEN => write!(f, "{}", "[H]".on_green()),
+            Cell::BLUE => write!(f, "{}", "[H]".on_blue()),
+            Cell::EMPTY => write!(f, "[ ]"),
         }
     }
 }
@@ -42,7 +42,7 @@ impl Game {
         Game {
             board: game_board,
             stables: game_stables,
-            stairs: game_stairs
+            stairs: game_stairs,
         }
     }
 
@@ -84,13 +84,30 @@ impl Game {
         if self.cell_is_empty(index) {
             return;
         }
-        let horse_color: Cell = self.board[index];
-        let new_index = (index + to_advance) % NB_CELLS;
-        if !self.cell_is_empty(new_index) {
-            self.kick_horse(new_index);
+        let color: Cell = self.board[index];
+        let stair_index = self.get_stair_index(color);
+        if index == stair_index {
+            self.stairs[color as usize][to_advance - 1] = true;
+        } else {
+            let mut new_index = index + to_advance;
+            if index < stair_index && index + to_advance > stair_index {
+                new_index = stair_index - (new_index - stair_index);
+            }
+            new_index = new_index % NB_CELLS;
+            if new_index != index && !self.cell_is_empty(new_index) {
+                self.kick_horse(new_index);
+            }
+            self.board[new_index] = color;
         }
         self.board[index] = Cell::EMPTY;
-        self.board[new_index] = horse_color;
+    }
+
+    fn get_stair_index(&self, color: Cell) -> usize {
+        if color as usize == 0 {
+            NB_CELLS - 1
+        } else {
+            NB_CELLS / 4 * color as usize - 1
+        }
     }
 
     fn print_board(&self) {
@@ -178,7 +195,7 @@ impl Game {
                 Cell::YELLOW => print!("{}", step.on_yellow()),
                 Cell::GREEN => print!("{}", step.on_green()),
                 Cell::BLUE => print!("{}", step.on_blue()),
-                Cell::EMPTY => print!("[ ]")
+                Cell::EMPTY => print!("[ ]"),
             }
         }
     }
@@ -189,152 +206,309 @@ impl Game {
 mod tests {
     use super::*;
 
-    #[test]
-    fn can_create_game() {
-        let _: Game;
-        let _: Game = Game::new();
-    }
+    mod initialization {
+        use super::*;
 
-    #[test]
-    fn board_is_initialized() {
-        let game = Game::new();
-        for &cell in game.board.iter() {
-            assert_eq!(cell, Cell::EMPTY);
+        #[test]
+        fn can_create_game() {
+            let _: Game;
+            let _: Game = Game::new();
         }
-    }
 
-    #[test]
-    fn stables_are_initialized() {
-        let game = Game::new();
-        for &stable in game.stables.iter() {
-            assert_eq!(stable, NB_START_HORSES);
+        #[test]
+        fn board() {
+            let game = Game::new();
+            for &cell in game.board.iter() {
+                assert_eq!(cell, Cell::EMPTY);
+            }
         }
-    }
 
-    #[test]
-    fn stairs_are_initialized() {
-        let game = Game::new();
-        for &stair in game.stairs.iter() {
-            for &stair_step in stair.iter() {
-                assert_eq!(stair_step, false);
+        #[test]
+        fn stables() {
+            let game = Game::new();
+            for &stable in game.stables.iter() {
+                assert_eq!(stable, NB_START_HORSES);
+            }
+        }
+
+        #[test]
+        fn stairs() {
+            let game = Game::new();
+            for &stair in game.stairs.iter() {
+                for &stair_step in stair.iter() {
+                    assert_eq!(stair_step, false);
+                }
             }
         }
     }
 
-    #[test]
-    fn place_red_horse() {
-        let mut game = Game::new();
-        let expected_index = 0;
-        game.place_horse(Cell::RED);
-        assert_eq!(game.board[expected_index], Cell::RED);
-        assert_eq!(game.stables[Cell::RED as usize], NB_START_HORSES - 1);
-    }
+    mod place_horse {
+        use super::*;
 
-    #[test]
-    fn place_yellow_horse() {
-        let mut game = Game::new();
-        let expected_index = NB_CELLS / 4;
-        game.place_horse(Cell::YELLOW);
-        assert_eq!(game.board[expected_index], Cell::YELLOW);
-        assert_eq!(game.stables[Cell::YELLOW as usize], NB_START_HORSES - 1);
-    }
+        #[test]
+        fn red() {
+            let mut game = Game::new();
+            let expected_index = 0;
+            game.place_horse(Cell::RED);
+            assert_eq!(game.board[expected_index], Cell::RED);
+            assert_eq!(game.stables[Cell::RED as usize], NB_START_HORSES - 1);
+        }
 
-    #[test]
-    fn place_green_horse() {
-        let mut game = Game::new();
-        let expected_index = (NB_CELLS / 4) * 2;
-        game.place_horse(Cell::GREEN);
-        assert_eq!(game.board[expected_index], Cell::GREEN);
-        assert_eq!(game.stables[Cell::GREEN as usize], NB_START_HORSES - 1);
-    }
+        #[test]
+        fn yellow() {
+            let mut game = Game::new();
+            let expected_index = NB_CELLS / 4;
+            game.place_horse(Cell::YELLOW);
+            assert_eq!(game.board[expected_index], Cell::YELLOW);
+            assert_eq!(game.stables[Cell::YELLOW as usize], NB_START_HORSES - 1);
+        }
 
-    #[test]
-    fn place_blue_horse() {
-        let mut game = Game::new();
-        let expected_index = (NB_CELLS / 4) * 3;
-        game.place_horse(Cell::BLUE);
-        assert_eq!(game.board[expected_index], Cell::BLUE);
-        assert_eq!(game.stables[Cell::BLUE as usize], NB_START_HORSES - 1);
-    }
+        #[test]
+        fn green() {
+            let mut game = Game::new();
+            let expected_index = (NB_CELLS / 4) * 2;
+            game.place_horse(Cell::GREEN);
+            assert_eq!(game.board[expected_index], Cell::GREEN);
+            assert_eq!(game.stables[Cell::GREEN as usize], NB_START_HORSES - 1);
+        }
 
-    #[test]
-    fn place_horse_kick_horse() {
-        let mut game = Game::new();
-        let expected_index = NB_CELLS / 4;
+        #[test]
+        fn blue() {
+            let mut game = Game::new();
+            let expected_index = (NB_CELLS / 4) * 3;
+            game.place_horse(Cell::BLUE);
+            assert_eq!(game.board[expected_index], Cell::BLUE);
+            assert_eq!(game.stables[Cell::BLUE as usize], NB_START_HORSES - 1);
+        }
 
-        game.place_horse(Cell::RED);
-        game.move_horse(0, expected_index);
-        game.place_horse(Cell::YELLOW);
+        #[test]
+        fn kick_on_place() {
+            let mut game = Game::new();
+            let expected_index = NB_CELLS / 4;
 
-        assert_eq!(game.board[expected_index], Cell::YELLOW);
-        assert_eq!(game.stables[Cell::RED as usize], NB_START_HORSES);
-        assert_eq!(game.stables[Cell::YELLOW as usize], NB_START_HORSES - 1);
-    }
+            game.place_horse(Cell::RED);
+            game.move_horse(0, expected_index);
+            game.place_horse(Cell::YELLOW);
 
-    #[test]
-    fn move_horse() {
-        let mut game = Game::new();
-        game.place_horse(Cell::RED);
-        game.move_horse(0, 3);
-        assert_eq!(game.board[3], Cell::RED);
-    }
-
-    #[test]
-    fn move_horse_board_loop() {
-        let mut game = Game::new();
-        game.board[NB_CELLS - 1] = Cell::RED;
-        game.move_horse(NB_CELLS - 1, 1);
-        assert_eq!(game.board[0], Cell::RED);
-    }
-
-    #[test]
-    fn move_horse_kick_horse() {
-        let mut game = Game::new();
-        let expected_index = NB_CELLS / 4;
-
-        game.place_horse(Cell::RED);
-        game.place_horse(Cell::YELLOW);
-        game.move_horse(0, expected_index);
-
-        assert_eq!(game.board[expected_index], Cell::RED);
-        assert_eq!(game.stables[Cell::YELLOW as usize], NB_START_HORSES);
-    }
-
-    #[test]
-    fn move_horse_empty_at_index() {
-        let mut game = Game::new();
-        game.move_horse(4, 3);
-        for &cell in game.board.iter() {
-            assert_eq!(cell, Cell::EMPTY);
+            assert_eq!(game.board[expected_index], Cell::YELLOW);
+            assert_eq!(game.stables[Cell::RED as usize], NB_START_HORSES);
+            assert_eq!(game.stables[Cell::YELLOW as usize], NB_START_HORSES - 1);
         }
     }
 
-    #[test]
-    fn move_horse_empty_at_new_index() {
-        let mut game = Game::new();
-        let start_index = NB_CELLS / 4;
+    mod get_stair_index {
+        use super::*;
 
-        game.place_horse(Cell::YELLOW);
-        game.move_horse(start_index, 1);
-        assert_eq!(game.board[start_index + 1], Cell::YELLOW);
+        #[test]
+        fn red() {
+            let game = Game::new();
+            assert_eq!(game.get_stair_index(Cell::RED), NB_CELLS - 1);
+        }
+
+        #[test]
+        fn yellow() {
+            let game = Game::new();
+            assert_eq!(game.get_stair_index(Cell::YELLOW), NB_CELLS / 4 - 1);
+        }
+
+        #[test]
+        fn green() {
+            let game = Game::new();
+            assert_eq!(game.get_stair_index(Cell::GREEN), NB_CELLS / 4 * 2 - 1);
+        }
+
+        #[test]
+        fn blue() {
+            let game = Game::new();
+            assert_eq!(game.get_stair_index(Cell::BLUE), NB_CELLS / 4 * 3 - 1);
+        }
     }
 
-    #[test]
-    fn kick_horse() {
-        let mut game = Game::new();
-        game.place_horse(Cell::RED);
-        game.kick_horse(0);
-        assert_eq!(game.board[0], Cell::EMPTY);
-        assert_eq!(game.stables[Cell::RED as usize], NB_START_HORSES);
+    mod move_horse {
+        use super::*;
+
+        #[test]
+        fn can_move() {
+            let mut game = Game::new();
+            game.board[0] = Cell::RED;
+            game.move_horse(0, 3);
+            assert_eq!(game.board[3], Cell::RED);
+        }
+
+        #[test]
+        fn no_horse_at_index() {
+            let mut game = Game::new();
+            game.move_horse(4, 3);
+            for &cell in game.board.iter() {
+                assert_eq!(cell, Cell::EMPTY);
+            }
+        }
+
+        #[test]
+        fn board_loop() {
+            let mut game = Game::new();
+            game.board[NB_CELLS - 1] = Cell::YELLOW;
+            game.move_horse(NB_CELLS - 1, 1);
+            assert_eq!(game.board[0], Cell::YELLOW);
+        }
+
+        #[test]
+        fn kick_on_move() {
+            let mut game = Game::new();
+            let expected_index = NB_CELLS / 4;
+
+            game.place_horse(Cell::RED);
+            game.place_horse(Cell::YELLOW);
+            game.move_horse(0, expected_index);
+
+            assert_eq!(game.board[expected_index], Cell::RED);
+            assert_eq!(game.stables[Cell::YELLOW as usize], NB_START_HORSES);
+        }
+
+        mod turn_completed {
+            use super::*;
+
+            mod at_stairs {
+                use super::*;
+                #[test]
+                fn red() {
+                    let mut game = Game::new();
+                    let color = Cell::RED;
+
+                    let end_index = game.get_stair_index(color);
+                    game.board[end_index - 1] = color;
+                    game.move_horse(end_index - 1, 1);
+                    assert_eq!(game.board[end_index], color);
+                }
+
+                #[test]
+                fn yellow() {
+                    let mut game = Game::new();
+                    let color = Cell::YELLOW;
+
+                    let end_index = game.get_stair_index(color);
+                    game.board[end_index - 1] = color;
+                    game.move_horse(end_index - 1, 1);
+                    assert_eq!(game.board[end_index], color);
+                }
+
+                #[test]
+                fn green() {
+                    let mut game = Game::new();
+                    let color = Cell::GREEN;
+
+                    let end_index = game.get_stair_index(color);
+                    game.board[end_index - 1] = color;
+                    game.move_horse(end_index - 1, 1);
+                    assert_eq!(game.board[end_index], color);
+                }
+
+                #[test]
+                fn blue() {
+                    let mut game = Game::new();
+                    let color = Cell::BLUE;
+
+                    let end_index = game.get_stair_index(color);
+                    game.board[end_index - 1] = color;
+                    game.move_horse(end_index - 1, 1);
+                    assert_eq!(game.board[end_index], color);
+                }
+            }
+
+            mod pass_stairs {
+                use super::*;
+                #[test]
+                fn red() {
+                    let mut game = Game::new();
+                    let color = Cell::BLUE;
+
+                    let end_index = game.get_stair_index(color);
+                    let index = end_index - 1;
+                    let to_advance = 3;
+                    game.board[index] = color;
+                    game.move_horse(index, to_advance);
+                    assert_eq!(game.board[end_index - 2], color)
+                }
+
+                #[test]
+                fn yellow() {
+                    let mut game = Game::new();
+                    let color = Cell::YELLOW;
+
+                    let end_index = game.get_stair_index(color);
+                    let index = end_index - 1;
+                    let to_advance = 3;
+                    game.board[index] = color;
+                    game.move_horse(index, to_advance);
+                    assert_eq!(game.board[end_index - 2], color)
+                }
+
+                #[test]
+                fn green() {
+                    let mut game = Game::new();
+                    let color = Cell::GREEN;
+
+                    let end_index = game.get_stair_index(color);
+                    let index = end_index - 1;
+                    let to_advance = 3;
+                    game.board[index] = color;
+                    game.move_horse(index, to_advance);
+                    assert_eq!(game.board[end_index - 2], color)
+                }
+
+                #[test]
+                fn blue() {
+                    let mut game = Game::new();
+                    let color = Cell::BLUE;
+
+                    let end_index = game.get_stair_index(color);
+                    let index = end_index - 1;
+                    let to_advance = 3;
+                    game.board[index] = color;
+                    game.move_horse(index, to_advance);
+                    assert_eq!(game.board[end_index - 2], color)
+                }
+            }
+
+            mod to_stairs {
+                use super::*;
+
+                #[test]
+                fn red() {
+                    let mut game = Game::new();
+                    let color = Cell::RED;
+
+                    let index = game.get_stair_index(color);
+                    let stair_index = 5;
+                    game.board[index] = color;
+                    game.move_horse(index, stair_index);
+                    assert_eq!(game.board[index], Cell::EMPTY);
+                    assert_eq!(game.stairs[color as usize][stair_index - 1], true);
+                }
+            }
+        }
     }
 
-    #[test]
-    fn kick_horse_no_horse_at_index() {
-        let mut game = Game::new();
-        game.kick_horse(0);
-        assert_eq!(game.board[0], Cell::EMPTY);
-        for &stable in game.stables.iter() {
-            assert_eq!(stable, NB_START_HORSES);
+    mod kick_horse {
+        use super::*;
+
+        #[test]
+        fn place_and_kick() {
+            let mut game = Game::new();
+            game.place_horse(Cell::RED);
+            game.kick_horse(0);
+            assert_eq!(game.board[0], Cell::EMPTY);
+            assert_eq!(game.stables[Cell::RED as usize], NB_START_HORSES);
+        }
+
+        #[test]
+        fn no_horse_at_index() {
+            let mut game = Game::new();
+            game.kick_horse(0);
+            assert_eq!(game.board[0], Cell::EMPTY);
+            for &stable in game.stables.iter() {
+                assert_eq!(stable, NB_START_HORSES);
+            }
         }
     }
 }
