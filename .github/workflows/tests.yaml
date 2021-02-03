@@ -44,6 +44,7 @@ jobs:
   lints:
     name: Lints
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
