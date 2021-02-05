@@ -85,22 +85,32 @@ impl Game {
         if self.cell_is_empty(index) {
             return;
         }
-        let color: Cell = self.board[index];
-        let stair_index = self.get_stair_index(color);
+        let stair_index = self.get_stair_index(self.board[index]);
         if index == stair_index {
-            self.stairs[color as usize][to_advance - 1] = true;
+            self.move_horse_stairs(index, to_advance)
         } else {
-            let mut new_index = index + to_advance;
-            if index < stair_index && index + to_advance > stair_index {
-                new_index = stair_index - (new_index - stair_index);
-            }
-            new_index = new_index % NB_CELLS;
-            if new_index != index && !self.cell_is_empty(new_index) {
-                self.kick_horse(new_index);
-            }
-            self.board[new_index] = color;
+            self.move_horse_board(index, to_advance);
         }
         self.board[index] = Cell::EMPTY;
+    }
+
+    fn move_horse_board(&mut self, index: usize, to_advance: usize) {
+        let color: Cell = self.board[index];
+        let stair_index = self.get_stair_index(color);
+        let mut new_index = index + to_advance;
+        if index < stair_index && index + to_advance > stair_index {
+            new_index = stair_index - (new_index - stair_index);
+        }
+        new_index = new_index % NB_CELLS;
+        if new_index != index && !self.cell_is_empty(new_index) {
+            self.kick_horse(new_index);
+        }
+        self.board[new_index] = color;
+    }
+
+    fn move_horse_stairs(&mut self, index: usize, to_advance: usize) {
+        let color: Cell = self.board[index];
+        self.stairs[color as usize][to_advance - 1] = true;
     }
 
     fn get_stair_index(&self, color: Cell) -> usize {
