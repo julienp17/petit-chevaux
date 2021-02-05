@@ -3,6 +3,7 @@ use rand::Rng;
 use std::fmt;
 const NB_CELLS: usize = 56;
 const NB_START_HORSES: usize = 2;
+const NB_MAX_HORSES: usize = 4;
 const NB_MAX_PLAYERS: usize = 4;
 const NB_STAIRS: usize = 6;
 
@@ -128,7 +129,7 @@ impl Game {
 
     fn print_stable(&self, color: Cell) {
         let mut nb_horses = self.stables[color as usize];
-        for _ in 0..NB_MAX_PLAYERS {
+        for _ in 0..NB_MAX_HORSES {
             if nb_horses == 0 {
                 match color {
                     Cell::RED => print!("{}", "   ".on_red()),
