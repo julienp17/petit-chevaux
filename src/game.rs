@@ -53,6 +53,8 @@ impl Game {
         self.place_horse(Cell::GREEN);
         self.place_horse(Cell::BLUE);
         self.print_board();
+        self.move_horse(0, 2);
+        self.print_board();
     }
 
     fn roll_dice(&self) -> usize {
